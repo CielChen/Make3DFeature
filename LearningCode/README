@@ -1,0 +1,53 @@
+
+This folder contain function to perform the learning and inference of 
+the single view 3d Reconstruction task
+
+Procedures
+-----
+1) Run script "InitialPath" to initial the path including all function 
+
+2) Execute function OneShot3Defficient with following arguments:
+
+Modules
+------
+Features:
+Include any function that performs feature calculations
+
+Learning:
+Include any function that performs learning
+
+DataProcess:
+Include any function that prepares the Data for learning or others
+
+Inference:
+Include any function that performs inference
+
+Rendering:
+Include any function that performs rending the 3d model 
+(Now using VRML directly)
+
+Debug:
+function still in Debug state.
+
+Research_UnsuccessfulAbandoned:
+function that not need now
+
+Unknow:
+UnIdentified file temproary storage place
+
+Useful:
+Short m function that used frequently
+
+
+
+MakeFile
+------
+1) ./third_party/Superpixels/SourceCode/segment/segmentImgOpt.cpp
+
+2) ./LearningCode/Debug/SparseAverageSample2DOptimized.c
+
+3) ./LearningCode/Debug/WrlFacestHroiReduce.cpp
+
+4) ./LearningCode/Debug/SupRayAlign.cpp
+
+

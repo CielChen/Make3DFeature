@@ -1,0 +1,17 @@
+# 忽略所有 .pdf 结尾的文件
+*.pdf
+*.msi
+*.zip
+*.gz
+*.exe
+
+# 忽略 LightImages/ 目录下的所有文件，除了LightLable.txt
+LightImages/
+!LightImages/LightLable.txt
+!LightImages/pano_aaawcsqcbquzht.jpg
+
+OutputTest/
+!OutputTest/pano_aaawcsqcbquzht.txt
+
+
+
