@@ -108,16 +108,19 @@ end
   disp([ num2str( toc(startTime) ) ' seconds.']);
   
   %读取标注文件：图片名，光源索引，左上角坐标（x），左上角坐标（y），宽，高
-  [ImgName,ImgIdx,ImgLeft,ImgTop,ImgWidth,ImgHeight] = textread(...
+    % ------------------ by CIEL ------------------
+    %mod by xiewenming 2017-11-14
+%     [ImgName,ImgIdx,ImgTop,ImgLeft,ImgHeight,ImgWidth] = textread(...
+%       '../LightImages-test/LightLable.txt',...
+%       '%s%n%n%n%n%n');
+  [ImgName,ImgIdx,ImgTop,ImgLeft,ImgHeight,ImgWidth] = textread(...
       '../LightImages/LightLable.txt',...
       '%s%n%n%n%n%n');
-    
-%     [ImgName,ImgIdx,ImgLeft,ImgTop,ImgWidth,ImgHeight] = textread(...
-%       '../LightImages/LightLable.txt',...
-%       '%s%n%n%n%n%n','headerlines',6);
-%   
+  
   %依次获取文件夹下所有图片提取特征，并保存到相同文件名的文本文件中
   Files = dir(fullfile('../LightImages/', '*.jpg'));
+    % ------------------ by CIEL ------------------
+%     Files = dir(fullfile('../LightImages-test/', '*.jpg'));
   LengthFiles = length(Files);
   for iFile = 1:LengthFiles
       Default.filename{1} = [ strrep(Files(iFile).name, '.jpg', '') '_' taskName];
@@ -127,6 +130,8 @@ end
       fprintf('Loading the image %s...', Files(iFile).name);
       % img = imread(ImgPath);
       img = imread(strcat('../LightImages/', Files(iFile).name));
+        % ------------------ by CIEL ------------------
+%         img = imread(strcat('../LightImages-test/', Files(iFile).name));
       %记录原始图像的大小
       [clRawImgRow,clRawImgCol,clRawImgPixel]= size(img);
       %查找该图片在光源标注列表中的索引
