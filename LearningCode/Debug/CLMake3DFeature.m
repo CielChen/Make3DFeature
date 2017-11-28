@@ -109,8 +109,8 @@ end
   
   %读取标注文件：图片名，光源索引，左上角坐标（x），左上角坐标（y），宽，高
     % ------------------ by CIEL ------------------
-    %mod by xiewenming 2017-11-14
-%     [ImgName,ImgIdx,ImgTop,ImgLeft,ImgHeight,ImgWidth] = textread(...
+    %mod by xiewenming 2017-11-23
+%     [ImgName,ImgIdx,ImgLeft,ImgTop,ImgWidth,ImgHeight] = textread(...
 %       '../LightImages-test/LightLable.txt',...
 %       '%s%n%n%n%n%n');
   [ImgName,ImgIdx,ImgTop,ImgLeft,ImgHeight,ImgWidth] = textread(...
@@ -139,15 +139,25 @@ end
       %光源标注位置矩阵，依次交替xy值
       clLightSize = length(clLightIdx);
       clLightPosMat = zeros(clLightSize * 2, 5);
+      %mod by xiewenming 2017-11-26 反转opencv读入的标注框在y轴上的不一致
       for iLight = 1:clLightSize
           tmpLeft = ImgLeft(clLightIdx(iLight));
-          tmpTop = ImgTop(clLightIdx(iLight));
+          tmpTop = clRawImgRow - ImgTop(clLightIdx(iLight));
           tmpRight = tmpLeft + ImgWidth(clLightIdx(iLight));
-          tmpDown = tmpTop + ImgHeight(clLightIdx(iLight));
+          tmpDown = tmpTop - ImgHeight(clLightIdx(iLight));
           iTwoLight = 2 * iLight;
           clLightPosMat(iTwoLight-1,:) = [tmpLeft tmpRight tmpRight tmpLeft tmpLeft];
           clLightPosMat(iTwoLight,:) = [tmpTop tmpTop tmpDown tmpDown tmpTop];
       end
+%       for iLight = 1:clLightSize
+%           tmpLeft = ImgLeft(clLightIdx(iLight));
+%           tmpTop = ImgTop(clLightIdx(iLight));
+%           tmpRight = tmpLeft + ImgWidth(clLightIdx(iLight));
+%           tmpDown = tmpTop + ImgHeight(clLightIdx(iLight));
+%           iTwoLight = 2 * iLight;
+%           clLightPosMat(iTwoLight-1,:) = [tmpLeft tmpRight tmpRight tmpLeft tmpLeft];
+%           clLightPosMat(iTwoLight,:) = [tmpTop tmpTop tmpDown tmpDown tmpTop];
+%       end
       
       %  imgCameraParameters = exifread(ImgPath);
       %	if false %Default.Flag.DisplayFlag && (any( strcmp(fieldnames(imgCameraParameters),'FocalLength') ) || ...
@@ -213,6 +223,14 @@ end
           clIndexMatrix(idxSup, 3) = floor(finalRawX);
           clIndexMatrix(idxSup, 4) = floor(finalRawY);
           
+%           %mod by xiewenming 2017-11-24
+%           iJudgeTwoLight = 2 * iLight;
+%           inCenter = inpolygon(double(finalRawX), double(finalRawY),...
+%                       clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+%           if (inCenter == 1)
+%               clIndexMatrix(idxSup, 2) = 1;
+%           end
+          
           %判断超像素每行的中心是否处于光源范围内
           UniX = unique(x);
           UniXRow = UniX';
@@ -228,8 +246,11 @@ end
               finalMedianY = PixelYMedian * clScaleSup2RawCol;
               %判断超像素每行的中心是否处于光源范围内
               for iLight = 1:clLightSize
-                  in = inpolygon(double(finalMedianX), double(finalMedianY),...
-                      clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+                  iJudgeTwoLight = 2 * iLight;
+%                   in = inpolygon(double(finalMedianX), double(finalMedianY),...
+%                       clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
+                  in = inpolygon(double(finalMedianY), double(finalMedianX),...
+                      clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
                   if (in == 1)
                       clIndexMatrix(idxSup, 2) = 1;
                       bEndLightLoop = 1;
@@ -247,8 +268,11 @@ end
               finalLeftY = int64(PixelYLeft) * clScaleSup2RawCol;
               %判断超像素每行的中心是否处于光源范围内
               for iLight = 1:clLightSize
-                  in = inpolygon(double(finalLeftX), double(finalLeftY),...
-                      clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+                  iJudgeTwoLight = 2 * iLight;
+%                   in = inpolygon(double(finalLeftX), double(finalLeftY),...
+%                       clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
+                  in = inpolygon(double(finalLeftY), double(finalLeftX),...
+                      clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
                   if (in == 1)
                       clIndexMatrix(idxSup, 2) = 1;
                       bEndLightLoop = 1;
@@ -267,8 +291,11 @@ end
               finalRightY = int64(PixelYRight) * clScaleSup2RawCol;
               %判断超像素每行的中心是否处于光源范围内
               for iLight = 1:clLightSize
-                  in = inpolygon(double(finalRightX), double(finalRightY),...
-                      clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+                  iJudgeTwoLight = 2 * iLight;
+%                   in = inpolygon(double(finalRightX), double(finalRightY),...
+%                       clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
+                  in = inpolygon(double(finalRightY), double(finalRightX),...
+                      clLightPosMat(iJudgeTwoLight-1,:), clLightPosMat(iJudgeTwoLight,:));
                   if (in == 1)
                       clIndexMatrix(idxSup, 2) = 1;
                       bEndLightLoop = 1;
@@ -296,7 +323,7 @@ end
 %               %判断超像素每行的中心是否处于光源范围内
 %               for iLight = 1:clLightSize
 %                   in = inpolygon(double(finalMedianX), double(finalMedianY),...
-%                       clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+%                       clLightPosMat(iJudgeTwoLight,:), clLightPosMat(iLight+1,:));
 %                   if (in == 1)
 %                       clIndexMatrix(idxSup, 2) = 1;
 %                       bEndLightLoop = 1;
@@ -313,7 +340,7 @@ end
 %           %判断超像素中心是否处于光源范围内
 %           for iLight = 1:clLightSize
 %               in = inpolygon(double(finalRawX), double(finalRawY),...
-%                   clLightPosMat(iLight,:), clLightPosMat(iLight+1,:));
+%                   clLightPosMat(iJudgeTwoLight,:), clLightPosMat(iLight+1,:));
 %               if (in == 1)
 %                   clIndexMatrix(idxSup, 2) = 1;
 %                   break;
@@ -379,6 +406,35 @@ end
 %       newfilename = strcat(name,'.txt');
       newfilePathname = fullfile('../OutputTest/', strcat(name,'.txt'));
       save(newfilePathname, 'clIndexMatrix', '-ascii');
+      
+      %add by xiewenming 2017-11-24 绘制超像素与边框矩形关系图
+      DisplayTestFlag = Default.Flag.DisplayFlag; % set to display or not
+      if DisplayTestFlag
+          figure(10)
+          OutSupNum = idxSup-1;
+          OutSupMat0 = zeros(OutSupNum, 2);
+          OutSupMat1 = zeros(OutSupNum, 2);
+          for iOut = 1:OutSupNum
+              if clIndexMatrix(iOut, 2) == 0
+                  OutSupMat0(iOut, 1) = clIndexMatrix(iOut, 4);
+                  OutSupMat0(iOut, 2) = clIndexMatrix(iOut, 3);
+              else
+                  OutSupMat1(iOut, 1) = clIndexMatrix(iOut, 4);
+                  OutSupMat1(iOut, 2) = clIndexMatrix(iOut, 3);
+              end
+          end
+          axis([0 1024 0 512]);
+          scatter(OutSupMat0(:,1), OutSupMat0(:,2), '*');
+          hold on;
+          scatter(OutSupMat1(:,1), OutSupMat1(:,2), 'o');
+          hold on;
+          
+          for iOutLight = 1:clLightSize
+              iOutTwoLight = 2 * iOutLight;
+              mapshow(clLightPosMat(iOutTwoLight - 1,:), clLightPosMat(iOutTwoLight,:), 'DisplayType', 'polygon'); 
+              hold on;
+          end
+      end
       
       fprintf('Finish the image %s...', Files(iFile).name);
   end
